@@ -10,10 +10,10 @@ const DRK = '#0B1F3F';
 // ── Data ─────────────────────────────────────────────────────────────────────
 const ORDER_CATEGORIES = [
   { key: 'all',               label: 'All Orders & Bookings', icon: 'fa-layer-group',   to: '/order?tab=all',                emoji: '🗂️',  dot: '#7c3aed', glow: 'rgba(124,58,237,.13)' },
-  { key: 'MedicineOrder',     label: 'Medicine Orders',       icon: 'fa-pills',          to: '/order?tab=MedicineOrder',      emoji: '💊',  dot: '#059669', glow: 'rgba(5,150,105,.12)'  },
-  { key: 'LabtestOrder',      label: 'Lab Test Bookings',     icon: 'fa-flask',          to: '/order?tab=LabtestOrder',       emoji: '🧪',  dot: '#2563eb', glow: 'rgba(37,99,235,.12)'  },
-  { key: 'DoctorAppointment', label: 'Doctor Appointments',   icon: 'fa-user-md',        to: '/order?tab=DoctorAppointment',  emoji: '🩺',  dot: '#7c3aed', glow: 'rgba(124,58,237,.12)' },
-  { key: 'NurseAppointment',  label: 'Nurse Appointments',    icon: 'fa-user-nurse',     to: '/order?tab=NurseAppointment',   emoji: '👩‍⚕️', dot: '#db2777', glow: 'rgba(219,39,119,.12)' },
+//   { key: 'MedicineOrder',     label: 'Medicine Orders',       icon: 'fa-pills',          to: '/order?tab=MedicineOrder',      emoji: '💊',  dot: '#059669', glow: 'rgba(5,150,105,.12)'  },
+//   { key: 'LabtestOrder',      label: 'Lab Test Bookings',     icon: 'fa-flask',          to: '/order?tab=LabtestOrder',       emoji: '🧪',  dot: '#2563eb', glow: 'rgba(37,99,235,.12)'  },
+//   { key: 'DoctorAppointment', label: 'Doctor Appointments',   icon: 'fa-user-md',        to: '/order?tab=DoctorAppointment',  emoji: '🩺',  dot: '#7c3aed', glow: 'rgba(124,58,237,.12)' },
+//   { key: 'NurseAppointment',  label: 'Nurse Appointments',    icon: 'fa-user-nurse',     to: '/order?tab=NurseAppointment',   emoji: '👩‍⚕️', dot: '#db2777', glow: 'rgba(219,39,119,.12)' },
 ];
 
 const NAV_LINKS = [
@@ -280,7 +280,7 @@ export default function Navbar() {
               </NavLink>
             ))}
 
-            <Dropdown
+            {/* <Dropdown
               label="Orders"
               isOpen={openMenu === 'orders'}
               onToggle={() => toggle('orders')}
@@ -307,9 +307,9 @@ export default function Navbar() {
                   {cat.key === 'all' && <span className="nb-dd-badge">ALL</span>}
                 </Link>
               ))}
-            </Dropdown>
+            </Dropdown> */}
 
-            <Dropdown
+            {/* <Dropdown
               label="Pages"
               isOpen={openMenu === 'pages'}
               onToggle={() => toggle('pages')}
@@ -332,7 +332,7 @@ export default function Navbar() {
                   </span>
                 </Link>
               ))}
-            </Dropdown>
+            </Dropdown> */}
 
             <NavLink
               to="/contactus"
@@ -489,7 +489,7 @@ export default function Navbar() {
             ))}
           </div>
 
-          <div className="nb-mob-accordion">
+          {/* <div className="nb-mob-accordion">
             <button
               className={`nb-mob-acc-trigger${mOrdersOpen ? ' nb-mob-acc-trigger--open' : ''}`}
               onClick={() => setMOrdersOpen(o => !o)}
@@ -512,7 +512,7 @@ export default function Navbar() {
                 </Link>
               ))}
             </div>
-          </div>
+          </div> */}
 
           <div className="nb-mob-accordion">
             <button
