@@ -13,6 +13,7 @@ var whitelist = [
     'http://localhost:8000',
     'http://localhost:4000',
     'http://localhost:5000',
+    'https://healthapp-jqd5.onrender.com'
     
 ]
 
