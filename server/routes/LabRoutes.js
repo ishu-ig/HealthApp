@@ -7,13 +7,14 @@ const { createRecord,
     getSingleRecord,
     updaterecord,
     deleteRecord } = require("../controllers/LabController");
+const { verifyAdmin, verifyBoth } = require("../middleware/authorization");
 
 
 
-LabRouter.post("", labUploader.single("pic"), createRecord);
-LabRouter.get("", getRecord),
-LabRouter.get("/:_id", getSingleRecord),
-LabRouter.put("/:_id", labUploader.single("pic"), updaterecord),
-LabRouter.delete("/:_id", deleteRecord)
+LabRouter.post("",verifyAdmin, labUploader.single("pic"), createRecord);
+LabRouter.get("",getRecord),
+LabRouter.get("/:_id",verifyAdmin, getSingleRecord),
+LabRouter.put("/:_id",verifyAdmin, labUploader.single("pic"), updaterecord),
+LabRouter.delete("/:_id",verifyAdmin, deleteRecord)
 
 module.exports = LabRouter

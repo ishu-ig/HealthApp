@@ -34,6 +34,10 @@ const MedicineCheckoutSchema = new mongoose.Schema({
       type: String,
       default: ""
    },
+   deliveryBoy:{
+      type:mongoose.Schema.Types.ObjectId,
+      default:null
+   },
    medicines: []
 }, { timestamps: true })
 

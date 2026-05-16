@@ -4,7 +4,7 @@ export async function createRecord(collection,payload) {
             method: "POST",
             headers: {
                 "content-type": "application/json",
-                // "authorization":localStorage.getItem("token")
+                "authorization":localStorage.getItem("token")
             },
             body: JSON.stringify(payload)
         })
@@ -19,7 +19,7 @@ export async function createMultiPartRecord(collection,payload) {
         let response = await fetch(`${process.env.REACT_APP_BACKEND_SERVER}/api/${collection}`, {
             method: "POST",
             headers: {
-                // "authorization":localStorage.getItem("token")
+                "authorization":localStorage.getItem("token")
             },
             body:payload
         })
@@ -35,7 +35,7 @@ export async function getRecord(collection) {
             method: "GET",
             headers: {
                 "content-type": "application/json",
-                // "authorization":localStorage.getItem("token")
+                "authorization":localStorage.getItem("token")
             }
         })
         return await response.json()
@@ -50,7 +50,7 @@ export async function updateRecord(collection, payload) {
             method: "PUT",
             headers: {
                 "content-type": "application/json",
-                // "authorization":localStorage.getItem("token")
+                "authorization":localStorage.getItem("token")
             },
             body: JSON.stringify(payload)
         })
@@ -65,7 +65,7 @@ export async function updateMultiPartRecord(collection, payload) {
         let response = await fetch(`${process.env.REACT_APP_BACKEND_SERVER}/api/${collection}/${payload.get('_id')}`, {
             method: "PUT",
             headers: {
-                // "authorization":localStorage.getItem("token")
+                "authorization":localStorage.getItem("token")
             },
             body: payload
         })

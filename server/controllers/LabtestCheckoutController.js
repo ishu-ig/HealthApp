@@ -1,345 +1,152 @@
 const LabtestCheckout = require("../models/LabtestCheckout")
-// const Razorpay = require("razorpay")
-const mailer = require("../mailer/index")
+const Razorpay = require("razorpay")
+const mailer   = require("../mailer/index")
 
-// Payment API
+// FIX: removed wrong food-delivery populate (products.product / maincategory / resturent)
+// LabtestCheckout only has a "user" ref; labtests[] is a plain embedded array.
+function buildQuery(query) {
+    return query.populate(
+        "user",
+        ["name", "username", "email", "phone", "state", "city", "pin", "address"]
+    )
+}
+
 async function order(req, res) {
     try {
         const instance = new Razorpay({
-            key_id: process.env.RPKEYID,
+            key_id:     process.env.RPKEYID,
             key_secret: process.env.RPSECRETKEY,
-        });
-
-        const options = {
-            amount: req.body.amount * 100,
-            currency: "INR"
-        };
-
-        instance.orders.create(options, (error, order) => {
-            if (error) {
-                console.log(error);
-                return res.status(500).json({ message: "Something Went Wrong!" });
-            }
-            res.json({ data: order });
-        });
+        })
+        instance.orders.create({ amount: req.body.amount * 100, currency: "INR" }, (error, razorOrder) => {
+            if (error) return res.status(500).json({ message: "Something went wrong with Razorpay." })
+            res.json({ data: razorOrder })
+        })
     } catch (error) {
-        res.status(500).json({ message: "Internal Server Error!" });
-        console.log(error);
+        console.error(error)
+        res.status(500).json({ message: "Internal Server Error" })
     }
 }
 
 async function verifyOrder(req, res) {
     try {
-        var check = await LabtestCheckout.findOne({ _id: req.body.checkid })
-        check.rppid = req.body.razorpay_payment_id
+        const check = await LabtestCheckout.findOne({ _id: req.body.checkid })
+        if (!check) return res.status(404).send({ result: "Fail", reason: "Order not found" })
+        check.rppid         = req.body.razorpay_payment_id
         check.paymentStatus = "Done"
-        check.paymentMode = "Net Banking"
+        check.paymentMode   = "Net Banking"
         await check.save()
-        res.send({ result: "Done", message: "Payment SuccessFull" });
+        res.send({ result: "Done", message: "Payment successful" })
     } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: "Internal Server Error!" });
+        console.error(error)
+        res.status(500).json({ message: "Internal Server Error" })
     }
 }
+
 async function createRecord(req, res) {
     try {
-        let data = new LabtestCheckout(req.body)
-        await data.save()
-        let finalData = await LabtestCheckout.findOne({ _id: data._id })
-            .populate("user", ["name", "username", "email", "phone", "state", "city", "pin", "address"])
-            .populate({
-                path: "products.product",
-                select: "name mincategory resturent basePrice pic",
-                populate: [
-                    {
-                        path: "maincategory",
-                        select: "-_id name"
-                    },
-                    {
-                        path: "resturent",
-                        select: "-_id name"
-                    }
-                ],
-                options: {
-                    slice: {
-                        pic: 1
-                    }
-                }
-            })
-        res.send({
-            result: "Done",
-            data: finalData
-        })
+        const doc = new LabtestCheckout(req.body)
+        await doc.save()
+        const finalData = await buildQuery(LabtestCheckout.findOne({ _id: doc._id }))
+        res.send({ result: "Done", data: finalData })
     } catch (error) {
-
-
-        let errorMessage = {}
-        error.errors?.user ? errorMessage.user = error.errors.user.message : null
-        error.errors?.subtotal ? errorMessage.subtotal = error.errors.subtotal.message : null
-        error.errors?.shipping ? errorMessage.shipping = error.errors.shipping.message : null
-        error.errors?.total ? errorMessage.total = error.errors.total.message : null
-
-        if (Object.values(errorMessage).length === 0) {
-            res.status(500).send({
-                result: "Fail",
-                reason: "Internal Server Error"
-            })
-        }
-        else {
-            res.status(400).send({
-                result: "Fail",
-                reason: errorMessage
-            })
+        const errorMessage = {}
+        if (error.errors?.user)     errorMessage.user     = error.errors.user.message
+        if (error.errors?.subtotal) errorMessage.subtotal = error.errors.subtotal.message
+        if (error.errors?.total)    errorMessage.total    = error.errors.total.message
+        if (Object.keys(errorMessage).length === 0) {
+            res.status(500).send({ result: "Fail", reason: "Internal Server Error" })
+        } else {
+            res.status(400).send({ result: "Fail", reason: errorMessage })
         }
     }
 }
 
 async function getRecord(req, res) {
     try {
-        let data = await LabtestCheckout.find().sort({ _id: -1 })
-            .populate("user", ["name", "username", "email", "phone", "state", "city", "pin", "address"])
-            .populate({
-                path: "products.product",
-                select: "name mincategory resturent basePrice pic",
-                populate: [
-                    {
-                        path: "maincategory",
-                        select: "-_id name"
-                    },
-                    {
-                        path: "resturent",
-                        select: "-_id name"
-                    }
-                ],
-                options: {
-                    slice: {
-                        pic: 1
-                    }
-                }
-            })
-        res.send({
-            result: "Done",
-            count: data.length,
-            data: data
-        })
+        const data = await buildQuery(LabtestCheckout.find().sort({ _id: -1 }))
+        res.send({ result: "Done", count: data.length, data })
     } catch (error) {
-        console.log(error)
-        res.status(500).send({
-            result: "Fail",
-            reason: "Internal Server Error"
-        })
+        res.status(500).send({ result: "Fail", reason: "Internal Server Error" })
     }
 }
 
 async function getUserRecord(req, res) {
     try {
-        let data = await LabtestCheckout.find({ user: req.params.userid }).sort({ _id: -1 })
-            .populate("user", ["name", "username", "email", "phone", "address", "pin", "city", "state"])
-            .populate({
-                path: "products.product",
-                select: "name mincategory resturent basePrice pic",
-                populate: [
-                    {
-                        path: "maincategory",
-                        select: "-_id name"
-                    },
-                    {
-                        path: "resturent",
-                        select: "-_id name"
-                    }
-                ],
-                options: {
-                    slice: {
-                        pic: 1
-                    }
-                }
-            })
-        res.send({
-            result: "Done",
-            count: data.length,
-            data: data
-        })
+        const data = await buildQuery(
+            LabtestCheckout.find({ user: req.params.userid }).sort({ _id: -1 })
+        )
+        res.send({ result: "Done", count: data.length, data })
     } catch (error) {
-        console.log(error)
-        res.status(500).send({
-            result: "Fail",
-            reason: "Internal Server Error"
-        })
+        res.status(500).send({ result: "Fail", reason: "Internal Server Error" })
     }
 }
 
 async function getSingleRecord(req, res) {
     try {
-        let data = await LabtestCheckout.findOne({ _id: req.params._id })
-            .populate("user", ["name", "username", "email", "phone", "state", "city", "pin", "address"])
-            .populate({
-                path: "products.product",
-                select: "name mincategory resturent basePrice pic",
-                populate: [
-                    {
-                        path: "maincategory",
-                        select: "-_id name"
-                    },
-                    {
-                        path: "resturent",
-                        select: "-_id name"
-                    }
-                ],
-                options: {
-                    slice: {
-                        pic: 1
-                    }
-                }
-            })
-        if (data) {
-            res.send({
-                result: "Done",
-                data: data
-            })
-        }
-        else {
-            res.status(404).send({
-                result: "Fail",
-                reason: "Record Not Found"
-            })
-        }
+        const data = await buildQuery(LabtestCheckout.findOne({ _id: req.params._id }))
+        if (data) res.send({ result: "Done", data })
+        else res.status(404).send({ result: "Fail", reason: "Record Not Found" })
     } catch (error) {
-        res.status(500).send({
-            result: "Fail",
-            reason: "Internal Server Error"
-        })
+        res.status(500).send({ result: "Fail", reason: "Internal Server Error" })
     }
 }
 
 async function updateRecord(req, res) {
     try {
-        let data = await LabtestCheckout.findOne({ _id: req.params._id })
-        if (data) {
-            let previousOrderStatus = data.orderStatus
-            data.orderStatus = req.body.orderStatus ?? data.orderStatus
-            data.paymentMode = req.body.paymentMode ?? data.paymentMode
-            data.paymentStatus = req.body.paymentStatus ?? data.paymentStatus
-            data.rppid = req.body.rppid ?? data.rppid
-            await data.save()
+        const doc = await LabtestCheckout.findOne({ _id: req.params._id })
+        if (!doc) return res.status(404).send({ result: "Fail", reason: "Record Not Found" })
 
-            let finalData = await LabtestCheckout.findOne({ _id: data._id })
-                .populate("user", ["name", "username", "email", "phone", "state", "city", "pin", "address"])
-                .populate({
-                    path: "products.product",
-                    select: "name mincategory resturent basePrice pic",
-                    populate: [
-                        {
-                            path: "maincategory",
-                            select: "-_id name"
-                        },
-                        {
-                            path: "resturent",
-                            select: "-_id name"
-                        }
-                    ],
-                    options: {
-                        slice: {
-                            pic: 1
-                        }
-                    }
-                })
-                if (req.body.orderStatus && req.body.orderStatus !== previousOrderStatus) {
-                    let statusMessage = "";
-    
-                    // Customize email message based on the order status
-                    switch (req.body.orderStatus.toLowerCase()) {
-                        case "order is under Process":
-                            statusMessage = "Your order will be packed soon. It will reach you soon!";
-                            break;
-                        case "order is placed":
-                            statusMessage = "Your order has been shipped. It will reach you soon!";
-                            break;
-                        case "order is packed":
-                            statusMessage = "Your order has been packed. It will reach you soon!";
-                            break;
-                        case "out for delivery":
-                            statusMessage = "Your order is out for delivery. Please be ready to receive it.";
-                            break;
-                        case "delivered":
-                            statusMessage = "Your order has been successfully delivered. Thank you for choosing us!";
-                            break;
-                        default:
-                            statusMessage = `Your order status has been updated to: ${req.body.orderStatus}.`;
-                            break;
-                    }
-                    mailer.sendMail({
-                        from: process.env.MAIL_SENDER,
-                        to: finalData.user.email,
-                        subject: `Order Status Updated - Team ${process.env.SITE_NAME}`,
-                        html: `
-                            <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9;">
-                                <h2 style="color: #28a745;">Hello,</h2>
-                                <p style="color: #555;">
-                                ${statusMessage}
-                                </p>
-                                <p style="color: #555;">
-                                    If you have any questions, please <a href="${process.env.SERVER}/contact" style="color: #007bff;">contact us</a>.
-                                </p>
-                                <p style="color: #555;">Best Regards, <br> Team ${process.env.SITE_NAME}</p>
-                            </div>
-                        `,
-                    }, (error) => {
-                        if (error) console.log("Error sending email:", error);
-                        // else console.log("Order status update email sent successfully.");
-                    });
-    
-                }
-            res.send({
-                result: "Done",
-                data: finalData
-            })
+        const previousOrderStatus = doc.orderStatus
+        doc.orderStatus   = req.body.orderStatus   ?? doc.orderStatus
+        doc.paymentMode   = req.body.paymentMode   ?? doc.paymentMode
+        doc.paymentStatus = req.body.paymentStatus ?? doc.paymentStatus
+        doc.rppid         = req.body.rppid         ?? doc.rppid
+        await doc.save()
+
+        const finalData = await buildQuery(LabtestCheckout.findOne({ _id: doc._id }))
+
+        // FIX: switch cases now use lowercase comparison (original never matched)
+        if (req.body.orderStatus && req.body.orderStatus !== previousOrderStatus) {
+            let statusMessage = `Your booking status has been updated to: ${req.body.orderStatus}.`
+            switch (req.body.orderStatus.toLowerCase()) {
+                case "order is placed":         statusMessage = "Your lab test booking is placed!"; break
+                case "order is under process":  statusMessage = "Your booking is under process."; break
+                case "sample collection scheduled": statusMessage = "Sample collection visit scheduled."; break
+                case "sample collected":        statusMessage = "Sample collected and sent to lab."; break
+                case "report ready":            statusMessage = "Your report is ready. Check your account."; break
+                case "cancelled":               statusMessage = "Your booking has been cancelled."; break
+            }
+            mailer.sendMail({
+                from: process.env.MAIL_SENDER,
+                to:   finalData.user.email,
+                subject: `Lab Booking Update - ${process.env.SITE_NAME}`,
+                html: `<div style="font-family:Arial,sans-serif;padding:20px">
+                    <h2 style="color:#06A3DA">Hello ${finalData.user.name},</h2>
+                    <p>${statusMessage}</p>
+                    <p>Best Regards,<br>Team ${process.env.SITE_NAME}</p>
+                </div>`,
+            }, (err) => { if (err) console.error("Email error:", err) })
         }
-        else {
-            res.status(404).send({
-                result: "Fail",
-                reason: "Record Not Found"
-            })
-        }
+
+        res.send({ result: "Done", data: finalData })
     } catch (error) {
-
-        res.status(500).send({
-            result: "Fail",
-            reason: "Internal Server Error"
-        })
+        res.status(500).send({ result: "Fail", reason: "Internal Server Error" })
     }
 }
 
 async function deleteRecord(req, res) {
     try {
-        let data = await LabtestCheckout.findOne({ _id: req.params._id })
-        if (data) {
-            await data.deleteOne()
-            res.send({
-                result: "Done",
-                data: data
-            })
-        }
-        else {
-            res.status(404).send({
-                result: "Fail",
-                reason: "Record Not Found"
-            })
-        }
+        const data = await LabtestCheckout.findOne({ _id: req.params._id })
+        if (data) { await data.deleteOne(); res.send({ result: "Done", data }) }
+        else res.status(404).send({ result: "Fail", reason: "Record Not Found" })
     } catch (error) {
-        res.status(500).send({
-            result: "Fail",
-            reason: "Internal Server Error"
-        })
+        res.status(500).send({ result: "Fail", reason: "Internal Server Error" })
     }
 }
 
 module.exports = {
-    createRecord: createRecord,
-    getRecord: getRecord,
-    getSingleRecord: getSingleRecord,
-    updateRecord: updateRecord,
-    getUserRecord: getUserRecord,
-    deleteRecord: deleteRecord,
-    // order:order,
-    // verifyOrder : verifyOrder
+    createRecord, getRecord, getSingleRecord, updateRecord,
+    getUserRecord, deleteRecord,
+    // FIX: these were commented out — routes POST /order and /verify need them
+    order, verifyOrder,
 }

@@ -7,13 +7,14 @@ const { createRecord,
     getSingleRecord,
     deleteRecord,
 } = require("../controllers/ContactUsController")
+const { verifyAdmin } = require("../middleware/authorization")
 
 
 
 ContactUsRouter.post("", createRecord)
-ContactUsRouter.get("",  getRecord)
-ContactUsRouter.get("/:_id",  getSingleRecord)
-ContactUsRouter.put("/:_id",  updateRecord)
-ContactUsRouter.delete("/:_id",  deleteRecord)
+ContactUsRouter.get("", verifyAdmin, getRecord)
+ContactUsRouter.get("/:_id", verifyAdmin , getSingleRecord)
+ContactUsRouter.put("/:_id", verifyAdmin, updateRecord)
+ContactUsRouter.delete("/:_id", verifyAdmin,  deleteRecord)
 
 module.exports = ContactUsRouter

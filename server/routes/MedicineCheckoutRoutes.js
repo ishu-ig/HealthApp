@@ -11,14 +11,15 @@ const {
     order,
     verifyOrder,
 } = require("../controllers/MedicineCheckoutController");
+const { verifyAdmin, verifyBoth } = require("../middleware/authorization");
 
-MedicineCheckoutRouter.post("/order",        order);          // Razorpay: create order
-MedicineCheckoutRouter.post("/verify",       verifyOrder);    // Razorpay: verify payment
-MedicineCheckoutRouter.post("",              createRecord);
-MedicineCheckoutRouter.get("",              getRecord);
-MedicineCheckoutRouter.get("/user/:userid", getUserRecord);
-MedicineCheckoutRouter.get("/single/:_id",  getSingleRecord);
-MedicineCheckoutRouter.put("/:_id",         updateRecord);
-MedicineCheckoutRouter.delete("/:_id",      deleteRecord);
+MedicineCheckoutRouter.post("/order",verifyBoth,        order);          // Razorpay: create order
+MedicineCheckoutRouter.post("/verify",verifyBoth,       verifyOrder);    // Razorpay: verify payment
+MedicineCheckoutRouter.post("",verifyBoth,              createRecord);
+MedicineCheckoutRouter.get("", verifyAdmin,             getRecord);
+MedicineCheckoutRouter.get("/user/:userid",verifyBoth, getUserRecord);
+MedicineCheckoutRouter.get("/single/:_id",verifyBoth,  getSingleRecord);
+MedicineCheckoutRouter.put("/:_id",verifyBoth,         updateRecord);
+MedicineCheckoutRouter.delete("/:_id",verifyBoth,      deleteRecord);
 
 module.exports = MedicineCheckoutRouter;

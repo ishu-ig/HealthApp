@@ -3,7 +3,7 @@ const mailer = require("../mailer/index")
 const passwordValidator = require("password-validator")
 const bcrypt = require("bcrypt")
 const fs = require("fs")
-// const jwt = require("jsonwebtoken")
+const jwt = require("jsonwebtoken")
 
 const schema = new passwordValidator()
 
@@ -229,35 +229,48 @@ async function login(req, res) {
                 { username: req.body.username.trim() },
                 { email: req.body.username.trim() }
             ]
-        });
+        })
+        if (data) {
+            if (await bcrypt.compare(req.body.password, data.password)) {
+                let key = data.role === "Buyer" ? process.env.JWT_SECRET_KEY_BUYER : process.env.JWT_SECRET_KEY_ADMIN
+                jwt.sign({ data }, key, { expiresIn: "15 Days" }, (error, token) => {
+                    if (error) {
+                        console.log(error)
+                        res.status(500).send({
 
-        if (!data) {
-            return res.status(401).send({
+                            result: "Fail",
+                            reason: "Internal Server Error"
+                        })
+                    }
+                    else {
+                        res.send({
+                            result: "Done",
+                            data: data,
+                            token: token
+                        })
+                    }
+                })
+
+            }
+            else {
+                res.status(401).send({
+                    result: "Fail",
+                    reason: "Invalid Username or Password"
+                })
+            }
+        }
+        else {
+            res.status(401).send({
                 result: "Fail",
                 reason: "Invalid Username or Password"
-            });
+            })
         }
-
-        const isMatch = await bcrypt.compare(req.body.password, data.password);
-
-        if (!isMatch) {
-            return res.status(401).send({
-                result: "Fail",
-                reason: "Invalid Username or Password"
-            });
-        }
-
-        res.send({
-            result: "Done",
-            data: data
-        });
-
     } catch (error) {
-        console.log(error);
+        console.log(error)
         res.status(500).send({
             result: "Fail",
             reason: "Internal Server Error"
-        });
+        })
     }
 }
 async function forgetPassword1(req, res) {

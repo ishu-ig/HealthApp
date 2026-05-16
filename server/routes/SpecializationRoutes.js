@@ -7,13 +7,14 @@ const { createRecord,
     getSingleRecord,
     updaterecord,
     deleteRecord } = require("../controllers/SpecializationConlroller");
+const { verifyAdmin, verifyBoth } = require("../middleware/authorization");
 
 
 
-SpecializationRouter.post("", specializationUploader.single("pic"), createRecord);
+SpecializationRouter.post("",verifyAdmin, specializationUploader.single("pic"), createRecord);
 SpecializationRouter.get("", getRecord),
-SpecializationRouter.get("/:_id", getSingleRecord),
-SpecializationRouter.put("/:_id", specializationUploader.single("pic"), updaterecord),
-SpecializationRouter.delete("/:_id", deleteRecord)
+SpecializationRouter.get("/:_id",verifyAdmin, getSingleRecord),
+SpecializationRouter.put("/:_id",verifyAdmin, specializationUploader.single("pic"), updaterecord),
+SpecializationRouter.delete("/:_id",verifyAdmin, deleteRecord)
 
 module.exports = SpecializationRouter

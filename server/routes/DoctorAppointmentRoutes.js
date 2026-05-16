@@ -10,16 +10,17 @@ const { createRecord,
     order,
     verifyOrder
 } = require("../controllers/DoctorAppointmentController");
+const { verifyBoth, verifyAdmin } = require("../middleware/authorization");
 
 
 
-DoctorAppointmentRouter.post("" ,createRecord);
-DoctorAppointmentRouter.get("",  getRecord);
-DoctorAppointmentRouter.get("/user/:userid", getUserRecord);
-DoctorAppointmentRouter.get("/single/:_id", getSingleRecord);
-DoctorAppointmentRouter.put("/:_id", updateRecord);
-DoctorAppointmentRouter.delete("/:_id", deleteRecord);
-DoctorAppointmentRouter.post("/order", order);
-DoctorAppointmentRouter.post("/verify", verifyOrder);
+DoctorAppointmentRouter.post("" , verifyBoth, createRecord);
+DoctorAppointmentRouter.get("", verifyAdmin, getRecord);
+DoctorAppointmentRouter.get("/user/:userid",verifyBoth, getUserRecord);
+DoctorAppointmentRouter.get("/single/:_id",verifyBoth, getSingleRecord);
+DoctorAppointmentRouter.put("/:_id",verifyBoth, updateRecord);
+DoctorAppointmentRouter.delete("/:_id",verifyBoth, deleteRecord);
+DoctorAppointmentRouter.post("/order",verifyBoth, order);
+DoctorAppointmentRouter.post("/verify",verifyBoth, verifyOrder);
 
 module.exports = DoctorAppointmentRouter

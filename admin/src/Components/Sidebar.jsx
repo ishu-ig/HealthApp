@@ -83,6 +83,12 @@ export default function AdminSidebar({ isExpanded }) {
                         <span>Medicines</span>
                     </Link>
                 </li>
+                <li>
+                    <Link to="/medicineCheckout" className={`sidebar-link text-light ${isActive("/medicine") ? "active" : ""}`}>
+                        <i className="fa fa-capsules"></i>
+                        <span>Medicine Orders</span>
+                    </Link>
+                </li>
 
                 <li className="nav-section-label">Laboratory</li>
                 <li>
@@ -104,7 +110,7 @@ export default function AdminSidebar({ isExpanded }) {
                     </Link>
                 </li>
                 <li>
-                    <Link to="/labtestbooking" className={`sidebar-link text-light ${isActive("/labtestbooking") ? "active" : ""}`}>
+                    <Link to="/labtestCheckout" className={`sidebar-link text-light ${isActive("/labtestbooking") ? "active" : ""}`}>
                         <i className="fa fa-clipboard-list"></i>
                         <span>Test Bookings</span>
                     </Link>

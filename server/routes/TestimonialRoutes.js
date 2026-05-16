@@ -8,12 +8,13 @@ const {
     updateRecord,
     deleteRecord,
 } = require("../controllers/TestimonialController")
+const { verifyBoth, verifyAdmin } = require("../middleware/authorization")
 
-TestimonialRouter.post("", testimonialUploader.single("pic"), createRecord)
+TestimonialRouter.post("",verifyAdmin, testimonialUploader.single("pic"), createRecord)
 TestimonialRouter.get("", getRecord)
-TestimonialRouter.get("/:_id", getSingleRecord)
-TestimonialRouter.put("/:_id", testimonialUploader.single("pic"), updateRecord)
-TestimonialRouter.delete("/:_id", deleteRecord)
+TestimonialRouter.get("/:_id",verifyBoth, getSingleRecord)
+TestimonialRouter.put("/:_id",verifyBoth, testimonialUploader.single("pic"), updateRecord)
+TestimonialRouter.delete("/:_id",verifyBoth, deleteRecord)
 
 
 module.exports = TestimonialRouter

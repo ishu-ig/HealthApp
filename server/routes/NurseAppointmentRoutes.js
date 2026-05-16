@@ -10,16 +10,17 @@ const { createRecord,
     order,
     verifyOrder
 } = require("../controllers/NurseAppointmentController");
+const { verifyAdmin, verifyBoth } = require("../middleware/authorization");
 
 
 
-NurseAppointmentRouter.post("" ,createRecord);
-NurseAppointmentRouter.get("",  getRecord);
-NurseAppointmentRouter.get("/user/:userid", getUserRecord);
-NurseAppointmentRouter.get("/single/:_id", getSingleRecord);
-NurseAppointmentRouter.put("/:_id", updateRecord);
-NurseAppointmentRouter.delete("/:_id", deleteRecord);
-NurseAppointmentRouter.post("/order", order);
-NurseAppointmentRouter.post("/verify", verifyOrder);
+NurseAppointmentRouter.post("" ,verifyBoth,createRecord);
+NurseAppointmentRouter.get("",verifyAdmin,  getRecord);
+NurseAppointmentRouter.get("/user/:userid",verifyBoth, getUserRecord);
+NurseAppointmentRouter.get("/single/:_id",verifyBoth, getSingleRecord);
+NurseAppointmentRouter.put("/:_id",verifyBoth, updateRecord);
+NurseAppointmentRouter.delete("/:_id",verifyBoth, deleteRecord);
+NurseAppointmentRouter.post("/order",verifyBoth, order);
+NurseAppointmentRouter.post("/verify",verifyBoth, verifyOrder);
 
 module.exports = NurseAppointmentRouter

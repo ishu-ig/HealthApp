@@ -1,7 +1,7 @@
 const Router = require("express").Router()
 
 const DoctorRouter            = require("./DotorRoutes")
-const LabtestCategoryRouter   = require("./LabtestCategoryRoutes copy")
+const LabtestCategoryRouter   = require("./LabtestCategoryRoutes")
 const LabtestRouter           = require("./LabtestRoutes")
 const MedicineCartRouter      = require("./MedicineCartRoutes")
 const MedicineCategoryRouter  = require("./MedicineCategoryRoutes")
@@ -9,7 +9,6 @@ const MedicineRouter          = require("./MedicineRoutes")
 const SpecilizationRouter     = require("./SpecializationRoutes")
 const LabtestCartRouter       = require("./LabtestCartRoutes")
 const NewsletterRouter        = require("./NewsletterRoutes")
-const LabtestBookingRouter    = require("./LabtestBookingRoutes")
 const TestimonialRouter       = require("./TestimonialRoutes")
 const HospitalRouter          = require("./HospitalRoutes")
 const ContactUsRouter         = require("./ContactUsRouter")
@@ -23,6 +22,10 @@ const MedicineWishlistRouter  = require("./MedicineWishlistRoutes") // ✅ Fix: 
 const LabtestWishlistRouter   = require("./LabtestWishlistRouter")  // ✅ Fix: was importing MODEL
 const DoctorAppointmentRouter = require("./DoctorAppointmentRoutes")
 const NurseAppointmentRouter = require("./NurseAppointmentRoutes")
+const MedicineInvoiceRouter = require("./MedicineInvoiceRoute")
+const LabtestInvoiceRouter = require("./LabtestInvoiceRoutes")
+const DoctorInvoiceRouter = require("./DoctorInvoiceRoutes")
+const NurseInvoiceRouter = require("./NurseInvoiceRoutes")
 
 Router.use("/specialization",   SpecilizationRouter)
 Router.use("/hospital",         HospitalRouter)
@@ -37,7 +40,6 @@ Router.use("/labtestCart",      LabtestCartRouter)
 Router.use("/medicineCheckout", MedicineCheckoutRouter)
 Router.use("/labtestCheckout",  LabtestCheckoutRouter)
 Router.use("/newsletter",       NewsletterRouter)
-Router.use("/labtestbooking",   LabtestBookingRouter)
 Router.use("/testimonial",      TestimonialRouter)
 Router.use("/contactus",        ContactUsRouter)
 Router.use("/user",             UserRouter)
@@ -47,6 +49,11 @@ Router.use("/medicineWishlist", MedicineWishlistRouter) // ✅ Fix
 Router.use("/labtestWishlist",  LabtestWishlistRouter)  // ✅ Fix
 Router.use("/doctorAppointment",  DoctorAppointmentRouter)  // ✅ Fix
 Router.use("/nurseAppointment",  NurseAppointmentRouter)  // ✅ Fix
+Router.use("/medicine-invoice",  MedicineInvoiceRouter)
+Router.use("/labtest-invoice",   LabtestInvoiceRouter)
+Router.use("/doctor-invoice",    DoctorInvoiceRouter)
+Router.use("/nurse-invoice",     NurseInvoiceRouter)
+
 
 
 module.exports = Router

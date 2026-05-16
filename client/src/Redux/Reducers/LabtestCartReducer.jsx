@@ -11,7 +11,6 @@ export default function LabtestCartReducer(state=[], action) {
 
         case UPDATE_LABTESTCART_RED:
             let index = state.findIndex(x => x._id === action.payload._id)
-            state[index].qty = action.payload.qty
             state[index].total = action.payload.total
             return state
 

@@ -1,10 +1,10 @@
-export async function createRecord(collection,payload) {
+export async function createRecord(collection, payload) {
     try {
         let response = await fetch(`${process.env.REACT_APP_BACKEND_SERVER}/api/${collection}`, {
             method: "POST",
             headers: {
                 "content-type": "application/json",
-                // "authorization":localStorage.getItem("token")
+                "authorization": localStorage.getItem("token")
             },
             body: JSON.stringify(payload)
         })
@@ -13,36 +13,41 @@ export async function createRecord(collection,payload) {
         console.log(error)
     }
 }
-
-export async function createMultiPartRecord(collection,payload) {
+export async function createMultiPartRecord(collection, payload) {
     try {
         let response = await fetch(`${process.env.REACT_APP_BACKEND_SERVER}/api/${collection}`, {
             method: "POST",
             headers: {
-                // "authorization":localStorage.getItem("token")
+                "authorization": localStorage.getItem("token")
             },
-            body:payload
+            body: payload
         })
         return await response.json()
     } catch (error) {
         console.log(error)
     }
 }
-
 export async function getRecord(collection) {
     try {
-        let response = await fetch(`${process.env.REACT_APP_BACKEND_SERVER}/api/${collection}`, {
+        let url = `${process.env.REACT_APP_BACKEND_SERVER}/api/${collection}`;
+        if (collection === "medicineCart" || collection === "medicineWishlist" ||collection === "labtestCart" || collection === "labtestWishlist")
+            url = `${process.env.REACT_APP_BACKEND_SERVER}/api/${collection}/${localStorage.getItem("userid")}`;
+        else if (collection === "medicineCheckout" || collection === "labtestCheckout" || collection === "doctorAppointment" || collection === "nurseAppointment"   && localStorage.getItem("role") === "Buyer")
+            url = `${process.env.REACT_APP_BACKEND_SERVER}/api/${collection}/user/${localStorage.getItem("userid")}`;
+        let response = await fetch(url, {
             method: "GET",
             headers: {
                 "content-type": "application/json",
-                // "authorization":localStorage.getItem("token")
+                "authorization": localStorage.getItem("token")
             }
-        })
-        return await response.json()
+        });
+
+        return await response.json();
     } catch (error) {
-        console.log(error)
+        console.log(error);
     }
 }
+
 
 export async function updateRecord(collection, payload) {
     try {
@@ -50,7 +55,7 @@ export async function updateRecord(collection, payload) {
             method: "PUT",
             headers: {
                 "content-type": "application/json",
-                // "authorization":localStorage.getItem("token")
+                "authorization": localStorage.getItem("token")
             },
             body: JSON.stringify(payload)
         })
@@ -59,13 +64,12 @@ export async function updateRecord(collection, payload) {
         console.log(error)
     }
 }
-
 export async function updateMultiPartRecord(collection, payload) {
     try {
         let response = await fetch(`${process.env.REACT_APP_BACKEND_SERVER}/api/${collection}/${payload.get('_id')}`, {
             method: "PUT",
             headers: {
-                // "authorization":localStorage.getItem("token")
+                "authorization": localStorage.getItem("token")
             },
             body: payload
         })
@@ -81,7 +85,7 @@ export async function deleteRecord(collection, payload) {
             method: "DELETE",
             headers: {
                 "content-type": "application/json",
-                "authorization":localStorage.getItem("token")
+                "authorization": localStorage.getItem("token")
             }
         })
         return await response.json()

@@ -31,6 +31,9 @@ app.use(express.json())
 app.use("/public", express.static("public"))
 app.use("/api", Router)
 
+// index.js — add this alongside the existing /public route
+app.use("/invoices", express.static(path.join(__dirname, "public/invoices")))
+
 // Serve React frontend
 app.use("", express.static(path.join(__dirname, "client/build")))
 app.get("/{*path}", (req, res) => {                  // ✅ FIXED: was "*"

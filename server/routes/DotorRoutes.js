@@ -7,13 +7,14 @@ const { createRecord,
     getSingleRecord,
     updaterecord,
     deleteRecord } = require("../controllers/DoctorController");
+const { verifyAdmin, verifyBoth } = require("../middleware/authorization");
 
 
 
-DoctorRouter.post("", doctorUploader.single("pic"), createRecord);
+DoctorRouter.post("", verifyAdmin, doctorUploader.single("pic"), createRecord);
 DoctorRouter.get("", getRecord),
 DoctorRouter.get("/:_id", getSingleRecord),
-DoctorRouter.put("/:_id", doctorUploader.single("pic"), updaterecord),
-DoctorRouter.delete("/:_id", deleteRecord)
+DoctorRouter.put("/:_id",verifyAdmin, doctorUploader.single("pic"), updaterecord),
+DoctorRouter.delete("/:_id",verifyAdmin, deleteRecord)
 
 module.exports = DoctorRouter

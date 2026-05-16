@@ -5,13 +5,14 @@ const { createRecord,
     getSingleRecord,
     updateRecord,
     deleteRecord } = require("../controllers/ManufacturerController");
+const { verifyAdmin, verifyBoth } = require("../middleware/authorization");
 
 
 
-ManufacturerRouter.post("",  createRecord);
+ManufacturerRouter.post("",verifyAdmin,  createRecord);
 ManufacturerRouter.get("", getRecord),
-ManufacturerRouter.get("/:_id", getSingleRecord),
-ManufacturerRouter.put("/:_id", updateRecord),
-ManufacturerRouter.delete("/:_id", deleteRecord)
+ManufacturerRouter.get("/:_id",verifyAdmin, getSingleRecord),
+ManufacturerRouter.put("/:_id",verifyAdmin, updateRecord),
+ManufacturerRouter.delete("/:_id",verifyAdmin, deleteRecord)
 
 module.exports = ManufacturerRouter

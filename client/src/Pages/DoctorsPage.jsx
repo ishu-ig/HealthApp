@@ -33,7 +33,6 @@ export default function DoctorShopPage() {
     function filter(sp = "All", min = -1, max = -1) {
         setSearch("");
         const filtered = DoctorStateData.filter((p) => {
-            // ✅ Compare against specialization.name (string) instead of the object
             const spMatch = sp === "All" || p.specialization?.name === sp;
             const minMatch = min === -1 || p.fees >= Number(min);
             const maxMatch = max === -1 || p.fees <= Number(max);
@@ -52,7 +51,6 @@ export default function DoctorShopPage() {
         const ch = search.toLowerCase();
         const filtered = DoctorStateData.filter(x =>
             x.active && (
-                // ✅ Use specialization.name for string search
                 x.specialization?.name?.toLowerCase().includes(ch) ||
                 x.description?.toLowerCase().includes(ch) ||
                 x.name?.toLowerCase().includes(ch)
@@ -63,97 +61,109 @@ export default function DoctorShopPage() {
 
     const sortFilter = (option) => {
         const sorted = [...data];
-        if (option === "1") {
-            sorted.sort((x, y) => y._id.toString().localeCompare(x._id.toString()));
-        } else if (option === "2") {
-            sorted.sort((x, y) => y.fees - x.fees);
-        } else {
-            sorted.sort((x, y) => x.fees - y.fees);
-        }
+        if (option === "1") sorted.sort((x, y) => y._id.toString().localeCompare(x._id.toString()));
+        else if (option === "2") sorted.sort((x, y) => y.fees - x.fees);
+        else sorted.sort((x, y) => x.fees - y.fees);
         setData(sorted);
     };
 
     return (
         <>
             <HeroSection title="Doctor Shop" />
-            <div className="container-fluid">
-                <div className="row">
-                    <div className="col-md-2">
-                        <div className="list-group mb-3">
-                            <Link className="list-group-item list-group-item-action active" to="#">
-                                Doctor
-                            </Link>
-                            <Link to={`/doctors?sp=All`} className="list-group-item list-group-item-action">
-                                All
-                            </Link>
-                            {SpecializationStateData.filter(x => x.active).map(item => (
-                                <Link
-                                    key={item._id}
-                                    // ✅ Pass item.name in URL (string, not object)
-                                    to={`/doctors?sp=${item.name}`}
-                                    className="list-group-item list-group-item-action"
-                                >
-                                    {item.name}
-                                </Link>
-                            ))}
-                        </div>
-
-                        <form onSubmit={applyPriceFilter}>
-                            <div className="row">
-                                <div className="col-6 mb-3">
-                                    <label>Minimum</label>
-                                    <input
-                                        type="number"
-                                        value={min === -1 ? "" : min}
-                                        onChange={(e) => setMin(e.target.value === "" ? -1 : Number(e.target.value))}
-                                        className="form-control border-3 border-primary"
-                                        placeholder="Min"
-                                    />
-                                </div>
-                                <div className="col-6 mb-3">
-                                    <label>Maximum</label>
-                                    <input
-                                        type="number"
-                                        value={max === -1 ? "" : max}
-                                        onChange={(e) => setMax(e.target.value === "" ? -1 : Number(e.target.value))}
-                                        className="form-control border-3 border-primary"
-                                        placeholder="Max"
-                                    />
+            <div className="shop-page-layout container-fluid py-4">
+                <div className="row g-4">
+                    {/* Sidebar */}
+                    <div className="col-md-3 col-lg-2">
+                        <div className="shop-sidebar">
+                            <div className="sidebar-section">
+                                <h6 className="sidebar-section-title">
+                                    <i className="bi bi-grid me-2"></i>Specialization
+                                </h6>
+                                <div className="sidebar-filter-list">
+                                    <Link
+                                        to="/doctors?sp=All"
+                                        className={`sidebar-filter-item ${sp === "All" ? "active" : ""}`}
+                                    >
+                                        All Doctors
+                                    </Link>
+                                    {SpecializationStateData.filter(x => x.active).map(item => (
+                                        <Link
+                                            key={item._id}
+                                            to={`/doctors?sp=${item.name}`}
+                                            className={`sidebar-filter-item ${sp === item.name ? "active" : ""}`}
+                                        >
+                                            {item.name}
+                                        </Link>
+                                    ))}
                                 </div>
                             </div>
-                            <div className="mb-5">
-                                <button type="submit" className="btn btn-primary w-100">Apply Filter</button>
-                            </div>
-                        </form>
-                    </div>
 
-                    <div className="col-md-10">
-                        <div className="row">
-                            <div className="col-md-9 mb-3">
-                                <form onSubmit={postSearch}>
-                                    <div className="btn-group w-100">
-                                        <input
-                                            type="search"
-                                            placeholder="Search"
-                                            value={search}
-                                            onChange={(e) => setSearch(e.target.value)}
-                                            className="form-control border-3 border-primary"
-                                            style={{ borderRadius: "10px 0 0 10px" }}
-                                        />
-                                        <button type="submit" className="btn btn-primary">Search</button>
+                            <div className="sidebar-section mt-4">
+                                <h6 className="sidebar-section-title">
+                                    <i className="bi bi-funnel me-2"></i>Filter by Fees
+                                </h6>
+                                <form onSubmit={applyPriceFilter} className="price-filter-form">
+                                    <div className="price-inputs">
+                                        <div className="price-input-group">
+                                            <label>Min (₹)</label>
+                                            <input
+                                                type="number"
+                                                value={min === -1 ? "" : min}
+                                                onChange={(e) => setMin(e.target.value === "" ? -1 : Number(e.target.value))}
+                                                className="form-control price-input"
+                                                placeholder="0"
+                                            />
+                                        </div>
+                                        <span className="price-sep">—</span>
+                                        <div className="price-input-group">
+                                            <label>Max (₹)</label>
+                                            <input
+                                                type="number"
+                                                value={max === -1 ? "" : max}
+                                                onChange={(e) => setMax(e.target.value === "" ? -1 : Number(e.target.value))}
+                                                className="form-control price-input"
+                                                placeholder="∞"
+                                            />
+                                        </div>
                                     </div>
+                                    <button type="submit" className="btn-apply-filter w-100 mt-3">
+                                        Apply Filter
+                                    </button>
                                 </form>
                             </div>
-                            <div className="col-md-3">
+                        </div>
+                    </div>
+
+                    {/* Main Content */}
+                    <div className="col-md-9 col-lg-10">
+                        <div className="shop-toolbar mb-4">
+                            <form onSubmit={postSearch} className="search-form flex-grow-1">
+                                <div className="search-input-group">
+                                    <i className="bi bi-search search-icon"></i>
+                                    <input
+                                        type="search"
+                                        placeholder="Search by name, specialization..."
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                        className="form-control search-input"
+                                    />
+                                    <button type="submit" className="btn-search">Search</button>
+                                </div>
+                            </form>
+                            <div className="sort-wrap ms-3">
                                 <select
                                     onChange={(e) => sortFilter(e.target.value)}
-                                    className="form-select border-3 border-primary"
+                                    className="form-select sort-select"
                                 >
                                     <option value="1">Latest</option>
-                                    <option value="2">Price : High to Low</option>
-                                    <option value="3">Price : Low to High</option>
+                                    <option value="2">Price: High → Low</option>
+                                    <option value="3">Price: Low → High</option>
                                 </select>
                             </div>
+                        </div>
+
+                        <div className="results-meta mb-3">
+                            <span className="results-count">{data.length} doctors found</span>
                         </div>
 
                         <Doctor data={data} />

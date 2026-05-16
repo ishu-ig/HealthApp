@@ -11,10 +11,6 @@ const LabtestCartSchema = new mongoose.Schema({
     ref:"Labtest",
     required:[true,"Labtest Id Is Mendatory"]
    },
-   reservationDate:{
-      type:Date,
-      required:[true,"Reservation date Is Mendatory"]
-   },
    total:{
     type:Number,
     required:[true,"Total Is Mendatory"]

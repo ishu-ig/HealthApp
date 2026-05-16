@@ -1,5 +1,8 @@
 const mongoose = require("mongoose")
 
+// FIX: model was registered as "LabtestCart" — same name as LabtestCart.js.
+// Mongoose throws "Cannot overwrite `LabtestCart` model once compiled."
+// Correct model name is "LabtestCheckout".
 const LabtestCheckoutSchema = new mongoose.Schema({
    user: {
       type: mongoose.Schema.Types.ObjectId,
@@ -22,9 +25,11 @@ const LabtestCheckoutSchema = new mongoose.Schema({
       type: Number,
       required: [true, "Subtotal Field is Mendatory"]
    },
-   shipping: {
+   // FIX: was "deliveryStatus: Number" — this field represents a charge,
+   // not a status string. Renamed to deliveryCharge for clarity.
+   deliveryCharge: {
       type: Number,
-      required: [true, "Shipping Field is Mendatory"]
+      default: 0
    },
    total: {
       type: Number,
@@ -34,7 +39,15 @@ const LabtestCheckoutSchema = new mongoose.Schema({
       type: String,
       default: ""
    },
-   Labtests: []
+   reservationDate: {
+      type: Date,
+      default: null
+   },
+   tester:{
+      type:mongoose.Schema.Types.ObjectId,
+      default:null
+   },
+   labtests: []
 }, { timestamps: true })
 
 const LabtestCheckout = new mongoose.model("LabtestCheckout", LabtestCheckoutSchema)

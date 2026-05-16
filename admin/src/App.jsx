@@ -53,6 +53,12 @@ import LoginPage from "./pages/LoginPage";
 import AdminTestimonial from "./pages/testimonial/AdminTestimonial";
 import AdminCreateTestimonial from "./pages/testimonial/AdminCreateTestimonial";
 import AdminUpdateTestimonial from "./pages/testimonial/AdminUpdateTestimonial";
+import AdminLabtestCheckout from "./pages/LabtestCheckout/AdminLabtestCheckout";
+import AdminLabtestCheckoutShow from "./pages/LabtestCheckout/AdminShowLabtestCheckout";
+import ViewLabtestCheckoutPage from "./pages/LabtestCheckout/ViewLabtestCheckoutPage";
+import AdminMedicineCheckout from "./pages/MedicineCheckout.js/AdminMedicineCheckout";
+import AdminMedicineCheckoutShow from "./pages/MedicineCheckout.js/AdminShowMedicineCheckout";
+import ViewMedicineCheckoutPage from "./pages/MedicineCheckout.js/ViewMedicinePage";
 
 export default function App() {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(
@@ -169,6 +175,15 @@ function MainContent({ isSidebarExpanded, toggleSidebar }) {
                     <Route path="/testimonial/create" element={<AdminCreateTestimonial />} />
                     <Route path="/testimonial/update/:_id" element={<AdminUpdateTestimonial />} />
 
+                    <Route path="/labtestCheckout" element={<AdminLabtestCheckout />} />
+          <Route path="/labtestCheckout/view/:_id" element={<AdminLabtestCheckoutShow />} />
+          <Route path="/labtestCheckout/update/:_id" element={<ViewLabtestCheckoutPage />} />
+
+          <Route path="/medicineCheckout" element={<AdminMedicineCheckout />} />
+          <Route path="/medicineCheckout/view/:_id" element={<AdminMedicineCheckoutShow />} />
+          <Route path="/medicineCheckout/update/:_id" element={<ViewMedicineCheckoutPage />} />
+
+
           <Route
             path="/doctorAppointment"
             element={<AdminDoctorAppointment />}
@@ -194,6 +209,7 @@ function MainContent({ isSidebarExpanded, toggleSidebar }) {
 
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/update-profile" element={<UpdateProfilePage />} />
+          
         </Routes>
 
         <Footer />

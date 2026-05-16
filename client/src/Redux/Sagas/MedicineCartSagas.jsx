@@ -10,7 +10,7 @@ function* createSaga(action) {                          //worker saga or execute
     yield put({ type: CREATE_MEDICINECART_RED, payload: response.data })
 }
 
-function* getSaga(action) {                             //worker saga or executer saga
+function* getSaga(action) {
     let response = yield getRecord("medicineCart")
     yield put({ type: GET_MEDICINECART_RED, payload: response.data })
 }

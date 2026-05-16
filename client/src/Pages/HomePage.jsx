@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import About from '../Components/About'
-import Appointment from '../Components/Appointment'
 import Services from '../Components/Services'
 import Offers from '../Components/Offers'
 import PriceSection from '../Components/PriceSection'
@@ -8,177 +8,223 @@ import Testimonials from '../Components/Testimonials'
 import Doctors from '../Components/Doctors'
 import Features from '../Components/Features'
 
-import { getDoctor } from "../Redux/ActionCreators/DoctorActionCreators"
+import { getDoctor } from '../Redux/ActionCreators/DoctorActionCreators'
 import { useDispatch, useSelector } from 'react-redux'
 import { getSpecialization } from '../Redux/ActionCreators/SpecializationActionCreators'
 import { getMedicineCategory } from '../Redux/ActionCreators/MedicineCategoryActionCreators'
 import { getLabtestCategory } from '../Redux/ActionCreators/LabtestCategoryActionCreators'
 
-import { Swiper, SwiperSlide } from 'swiper/react';
+import { Swiper, SwiperSlide } from 'swiper/react'
+import { Pagination, Autoplay } from 'swiper/modules'
+import 'swiper/css'
+import 'swiper/css/pagination'
 
-// Import Swiper styles
-import 'swiper/css';
-import 'swiper/css/pagination';
+const P = '#06A3DA', S = '#F57E57', DARK = '#091E3E'
 
-// import './styles.css';
+const slides = [
+  { img:'img/carousel-1.jpg', tag:'Keep Your Teeth Healthy',   heading:'Take The Best Quality Dental Treatment' },
+  { img:'img/carousel-2.jpg', tag:'Expert Care, Every Visit',  heading:'Your Health Is Our Top Priority' },
+]
 
-// import required modules
-import { Pagination } from 'swiper/modules';
+const bannerCards = [
+  {
+    bg: `linear-gradient(135deg,${P},#0080b0)`,
+    icon: 'fa-clock',
+    title: 'Opening Hours',
+    content: (
+      <div style={{ flex:1 }}>
+        {[['Mon – Fri','8:00am – 9:00pm'],['Saturday','8:00am – 7:00pm'],['Sunday','8:00am – 5:00pm']].map(([d,t]) => (
+          <div key={d} style={{ display:'flex', justifyContent:'space-between', padding:'8px 0', borderBottom:'1px solid rgba(255,255,255,0.15)', fontSize:'0.85rem' }}>
+            <span style={{ color:'rgba(255,255,255,0.85)', fontWeight:600 }}>{d}</span>
+            <span style={{ color:'#fff' }}>{t}</span>
+          </div>
+        ))}
+      </div>
+    ),
+    cta: { label:'Book Appointment', to:'/appointment' },
+  },
+  {
+    bg: `linear-gradient(135deg,${DARK},#0d2a5e)`,
+    icon: 'fa-user-md',
+    title: 'Find a Doctor',
+    content: (
+      <div style={{ flex:1, display:'flex', flexDirection:'column', gap:10 }}>
+        <input type="text" placeholder="Appointment Date" style={{ padding:'10px 14px', borderRadius:8, border:'none', background:'rgba(255,255,255,0.1)', color:'#fff', fontSize:'0.85rem', outline:'none', backdropFilter:'blur(4px)' }} />
+        <select style={{ padding:'10px 14px', borderRadius:8, border:'none', background:'rgba(255,255,255,0.1)', color:'#fff', fontSize:'0.85rem', outline:'none' }}>
+          <option>Select a Specialization</option>
+        </select>
+      </div>
+    ),
+    cta: { label:'Search Doctor', to:'/doctors' },
+  },
+  {
+    bg: `linear-gradient(135deg,${S},#d05c35)`,
+    icon: 'fa-headset',
+    title: 'Make Appointment',
+    content: (
+      <div style={{ flex:1 }}>
+        <p style={{ color:'rgba(255,255,255,0.82)', fontSize:'0.85rem', lineHeight:1.7, marginBottom:12 }}>
+          Our team of specialists is ready to help. Call us or book online for a seamless experience.
+        </p>
+        <p style={{ color:'#fff', fontWeight:800, fontSize:'1.4rem', fontFamily:"'Jost',sans-serif", margin:0 }}>
+          +012 345 6789
+        </p>
+      </div>
+    ),
+    cta: { label:'Contact Us', to:'/contactus' },
+  },
+]
 
 export default function HomePage() {
-    const DoctorStateData = useSelector(state => state.DoctorStateData)
-    const SpecializationStateData = useSelector(state => state.SpecializationStateData)
-    const MedicineCategoryStateData = useSelector(state => state.MedicineCategoryStateData)
-    const LabtestCategoryStateData = useSelector(state => state.LabtestCategoryStateData)
+  const DoctorStateData           = useSelector(s => s.DoctorStateData)
+  const SpecializationStateData   = useSelector(s => s.SpecializationStateData)
+  const MedicineCategoryStateData = useSelector(s => s.MedicineCategoryStateData)
+  const LabtestCategoryStateData  = useSelector(s => s.LabtestCategoryStateData)
+  const dispatch = useDispatch()
 
+  useEffect(() => { dispatch(getDoctor()) },           [DoctorStateData.length])
+  useEffect(() => { dispatch(getSpecialization()) },   [SpecializationStateData.length])
+  useEffect(() => { dispatch(getMedicineCategory()) }, [MedicineCategoryStateData.length])
+  useEffect(() => { dispatch(getLabtestCategory()) },  [MedicineCategoryStateData.length])
 
-    let dispatch = useDispatch()
-    useEffect(() => {
-        (() => {
-            dispatch(getDoctor())
-        })()
-    }, [DoctorStateData.length])
+  return (
+    <>
+      <style>{`
+        /* ── Hero carousel ── */
+        .hc-hero { position:relative; height:680px; overflow:hidden; }
+        .hc-hero img { width:100%; height:100%; object-fit:cover; }
+        .hc-hero-overlay {
+          position:absolute; inset:0;
+          background:linear-gradient(135deg,rgba(9,30,62,0.88) 0%,rgba(6,163,218,0.65) 100%);
+          display:flex; align-items:center; justify-content:center;
+        }
+        @media(max-width:576px){ .hc-hero{ height:480px; } }
 
+        /* ── Hero slide transition ── */
+        .carousel-item { transition:opacity .7s ease-in-out; }
 
-    useEffect(() => {
-        (() => {
-            dispatch(getSpecialization())
-        })()
-    }, [SpecializationStateData.length])
+        /* ── Banner card ── */
+        .banner-card {
+          border-radius:20px; overflow:hidden;
+          padding:28px 26px 22px;
+          display:flex; flex-direction:column; gap:16px;
+          min-height:300px;
+          box-shadow:0 12px 36px rgba(9,30,62,0.18);
+          transition:transform .3s; cursor:default;
+        }
+        .banner-card:hover { transform:translateY(-6px); }
 
-    useEffect(() => {
-        (() => {
-            dispatch(getMedicineCategory());
-        })()
-    }, [MedicineCategoryStateData.length])
-    useEffect(() => {
-        (() => {
-            dispatch(getLabtestCategory());
-        })()
-    }, [MedicineCategoryStateData.length])
-    return (
-        <>
-            {/* <!-- Carousel Start --> */}
-            <div className="container-fluid p-0">
-                <div id="header-carousel" className="carousel slide carousel-fade" data-bs-ride="carousel">
-                    <div className="carousel-inner">
-                        <div className="carousel-item active">
-                            <img className="w-100" src="img/carousel-1.jpg" alt="Image" height={650} />
-                            <div className="carousel-caption d-flex flex-column align-items-center justify-content-center">
-                                <div className="p-3" style={{ maxWidth: 850 }}>
-                                    <h5 className="text-white text-uppercase mb-3 animated slideInDown">Keep Your Teeth Healthy</h5>
-                                    <h1 className="display-1 text-white mb-md-4 animated zoomIn">Take The Best Quality Dental Treatment</h1>
-                                    <a href="appointment.html" className="btn btn-primary py-md-3 px-md-5 me-3 animated slideInLeft">Appointment</a>
-                                    <a href="" className="btn btn-secondary py-md-3 px-md-5 animated slideInRight">Contact Us</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="carousel-item">
-                            <img className="w-100" src="img/carousel-2.jpg" alt="Image" height={650} />
-                            <div className="carousel-caption d-flex flex-column align-items-center justify-content-center">
-                                <div className="p-3" style={{ maxWidth: 850 }}>
-                                    <h5 className="text-white text-uppercase mb-3 animated slideInDown">Keep Your Teeth Healthy</h5>
-                                    <h1 className="display-1 text-white mb-md-4 animated zoomIn">Take The Best Quality Dental Treatment</h1>
-                                    <a href="appointment.html" className="btn btn-primary py-md-3 px-md-5 me-3 animated slideInLeft">Appointment</a>
-                                    <a href="" className="btn btn-secondary py-md-3 px-md-5 animated slideInRight">Contact Us</a>
-                                </div>
-                            </div>
-                        </div>
+        /* ── Stat number ── */
+        .hc-stat { text-align:center; }
+        .hc-stat span { font-family:"'Jost',sans-serif"; font-weight:800; font-size:2.2rem; color:${P}; }
+        .hc-stat p   { font-size:.8rem; color:#6b7a93; margin:0; }
+      `}</style>
+
+      {/* ══ Hero Carousel ══ */}
+      <div id="header-carousel" className="carousel slide carousel-fade" data-bs-ride="carousel">
+        <div className="carousel-inner">
+          {slides.map((s, i) => (
+            <div key={i} className={`carousel-item ${i===0?'active':''}`}>
+              <div className="hc-hero">
+                <img src={s.img} alt="slide" />
+                <div className="hc-hero-overlay">
+                  <div style={{ textAlign:'center', maxWidth:820, padding:'0 24px', position:'relative', zIndex:1 }}>
+
+                    {/* Decorative ring */}
+                    <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', width:440, height:440, borderRadius:'50%', border:'1px solid rgba(255,255,255,0.07)', pointerEvents:'none' }} />
+
+                    <span style={{ display:'inline-block', background:'rgba(245,126,87,0.25)', color:'#F57E57', fontSize:'0.75rem', fontWeight:800, letterSpacing:'0.1em', textTransform:'uppercase', padding:'6px 20px', borderRadius:50, marginBottom:18, border:'1px solid rgba(245,126,87,0.4)', backdropFilter:'blur(4px)' }}>
+                      {s.tag}
+                    </span>
+                    <h1 style={{ fontFamily:"'Jost',sans-serif", fontSize:'clamp(2rem,5vw,3.5rem)', fontWeight:900, color:'#fff', lineHeight:1.1, marginBottom:28 }}>
+                      {s.heading}
+                    </h1>
+                    <div style={{ display:'flex', gap:14, justifyContent:'center', flexWrap:'wrap' }}>
+                      <Link to="/appointment" style={{ display:'inline-flex', alignItems:'center', gap:8, background:P, color:'#fff', padding:'13px 28px', borderRadius:50, fontWeight:700, fontSize:'0.9rem', textDecoration:'none', boxShadow:`0 6px 20px rgba(6,163,218,0.4)`, transition:'all .25s' }}
+                        onMouseEnter={e=>e.currentTarget.style.background=S}
+                        onMouseLeave={e=>e.currentTarget.style.background=P}>
+                        <i className="fa fa-calendar-check" />Appointment
+                      </Link>
+                      <Link to="/contactus" style={{ display:'inline-flex', alignItems:'center', gap:8, background:'rgba(255,255,255,0.12)', color:'#fff', padding:'13px 28px', borderRadius:50, fontWeight:700, fontSize:'0.9rem', textDecoration:'none', border:'1.5px solid rgba(255,255,255,0.35)', backdropFilter:'blur(4px)', transition:'all .25s' }}
+                        onMouseEnter={e=>e.currentTarget.style.background='rgba(255,255,255,0.22)'}
+                        onMouseLeave={e=>e.currentTarget.style.background='rgba(255,255,255,0.12)'}>
+                        <i className="fa fa-phone" />Contact Us
+                      </Link>
                     </div>
-                    <button className="carousel-control-prev" type="button" data-bs-target="#header-carousel"
-                        data-bs-slide="prev">
-                        <span className="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span className="visually-hidden">Previous</span>
-                    </button>
-                    <button className="carousel-control-next" type="button" data-bs-target="#header-carousel"
-                        data-bs-slide="next">
-                        <span className="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span className="visually-hidden">Next</span>
-                    </button>
+                  </div>
                 </div>
+              </div>
             </div>
-            {/* <!-- Carousel End --> */}
+          ))}
+        </div>
+        <button className="carousel-control-prev" type="button" data-bs-target="#header-carousel" data-bs-slide="prev">
+          <span className="carousel-control-prev-icon" />
+        </button>
+        <button className="carousel-control-next" type="button" data-bs-target="#header-carousel" data-bs-slide="next">
+          <span className="carousel-control-next-icon" />
+        </button>
+      </div>
 
+      {/* ══ Stats bar ══ */}
+      <div style={{ background:'#fff', padding:'28px 0', borderBottom:'1px solid rgba(6,163,218,0.1)', boxShadow:'0 4px 20px rgba(9,30,62,0.06)' }}>
+        <div className="container">
+          <div className="row g-3 justify-content-center">
+            {[['5000+','Happy Patients'],['20+','Specialists'],['15+','Years Experience'],['24/7','Support Available']].map(([n,l]) => (
+              <div key={l} className="col-6 col-md-3 text-center">
+                <p style={{ fontFamily:"'Jost',sans-serif", fontWeight:900, fontSize:'2rem', color:P, margin:'0 0 2px', lineHeight:1 }}>{n}</p>
+                <p style={{ fontSize:'0.78rem', color:'#6b7a93', margin:0, fontWeight:500 }}>{l}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
 
-            {/* <!-- Banner Start --> */}
-            <div className="container-fluid banner mb-5">
-                <div className="container">
-                    <Swiper
-                        autoplay={{
-                            delay: 3000, // ⏱ timespan in ms (3 sec)
-                            disableOnInteraction: false,
-                        }}
-                        breakpoints={{
-                            576: { slidesPerView: 1 },
-                            768: { slidesPerView: 2 },
-                            992: { slidesPerView: 3 },
-                        }}
-                        spaceBetween={30}
-                        pagination={{
-                            clickable: true,
-                        }}
-                        modules={[Pagination]}
-                        className="mySwiper"
-                    >
-                        <SwiperSlide>
-                            <div className="bg-primary d-flex flex-column p-5 me-3 mt-md-3 pt-3" style={{ height: 340 }}>
-                                <p><i className='fas fa-clock text-light' style={{ fontSize: "50px" }}></i></p>
-                                <h3 className="text-white mb-3">Opening Hours</h3>
-                                <div className="d-flex justify-content-between text-white mb-3">
-                                    <h6 className="text-white mb-0">Mon - Fri</h6>
-                                    <p className="mb-0"> 8:00am - 9:00pm</p>
-                                </div>
-                                <div className="d-flex justify-content-between text-white mb-3">
-                                    <h6 className="text-white mb-0">Saturday</h6>
-                                    <p className="mb-0"> 8:00am - 7:00pm</p>
-                                </div>
-                                <div className="d-flex justify-content-between text-white mb-3">
-                                    <h6 className="text-white mb-0">Sunday</h6>
-                                    <p className="mb-0"> 8:00am - 5:00pm</p>
-                                </div>
-                                <a className="btn btn-light" href="">Appointment</a>
-                            </div>
-                        </SwiperSlide>
-                        <SwiperSlide><div className="bg-dark d-flex flex-column p-5 me-3 mt-md-3 pt-4" style={{ height: 340 }}>
-                            <p><i className='fas fa-user-md text-light' style={{ fontSize: "50px" }}></i></p>
-                            <h3 className="text-white mb-3">Search A Doctor</h3>
-                            <div className="date mb-3" id="date" data-target-input="nearest">
-                                <input type="text" className="form-control bg-light border-0 datetimepicker-input"
-                                    placeholder="Appointment Date" data-target="#date" data-toggle="datetimepicker" style={{ height: 40 }} />
-                            </div>
-                            <select className="form-select bg-light border-0 mb-3" style={{ height: 40 }}>
-                                <option selected>Select A Service</option>
-                                <option value="1">Service 1</option>
-                                <option value="2">Service 2</option>
-                                <option value="3">Service 3</option>
-                            </select>
-                            <a className="btn btn-light" href="">Search Doctor</a>
-                        </div></SwiperSlide>
-                        <SwiperSlide>
-                            <div className="bg-secondary d-flex flex-column p-5 me-3 mt-md-3 pt-4" style={{ height: 340 }}>
-                                <p className="mb-3">
-                                    <i className="fas fa-headset text-light" style={{ fontSize: "50px" }}></i>
-                                </p>
-                                <h3 className="text-white mb-3">Make Appointment</h3>
-                                <p className="text-white">Ipsum erat ipsum dolor clita rebum no rebum dolores labore, ipsum magna at eos et eos amet.</p>
-                                <h2 className="text-white mb-0">+012 345 6789</h2>
-                            </div>
-                        </SwiperSlide>
-                    </Swiper>
+      {/* ══ Banner cards ══ */}
+      <div style={{ background:'#EEF9FF', padding:'40px 0 0' }}>
+        <div className="container">
+          <Swiper
+            modules={[Pagination, Autoplay]}
+            autoplay={{ delay:3800, disableOnInteraction:false }}
+            pagination={{ clickable:true }}
+            spaceBetween={24}
+            slidesPerView={1}
+            breakpoints={{ 640:{ slidesPerView:2 }, 992:{ slidesPerView:3 } }}
+            loop
+            className="pb-5"
+          >
+            {bannerCards.map((card, i) => (
+              <SwiperSlide key={i}>
+                <div className="banner-card" style={{ background:card.bg }}>
+                  {/* Icon */}
+                  <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+                    <div style={{ width:52, height:52, background:'rgba(255,255,255,0.15)', borderRadius:14, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, backdropFilter:'blur(4px)' }}>
+                      <i className={`fa ${card.icon}`} style={{ color:'#fff', fontSize:'1.3rem' }} />
+                    </div>
+                    <h4 style={{ fontFamily:"'Jost',sans-serif", fontWeight:800, color:'#fff', margin:0, fontSize:'1.1rem' }}>{card.title}</h4>
+                  </div>
+                  {card.content}
+                  <Link to={card.cta.to} style={{ display:'inline-flex', alignItems:'center', gap:7, padding:'10px 20px', background:'rgba(255,255,255,0.18)', color:'#fff', borderRadius:50, fontWeight:700, fontSize:'0.82rem', textDecoration:'none', border:'1px solid rgba(255,255,255,0.3)', backdropFilter:'blur(4px)', transition:'all .25s', alignSelf:'flex-start' }}
+                    onMouseEnter={e=>e.currentTarget.style.background='rgba(255,255,255,0.30)'}
+                    onMouseLeave={e=>e.currentTarget.style.background='rgba(255,255,255,0.18)'}>
+                    {card.cta.label} <i className="fa fa-arrow-right" style={{fontSize:'0.72rem'}} />
+                  </Link>
                 </div>
-            </div>
-            {/* <!-- Banner Start --> */}
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </div>
+      </div>
 
-            <About />
-            <Services title="Doctor Specialization" data={SpecializationStateData.filter(x => x.active)} />
-            <Features />
-            {/* <Appointment /> */}
-            <Services title="Medicine Category" data={MedicineCategoryStateData.filter(x => x.active)} />
-            <Offers />
-            <PriceSection />
-            <Testimonials />
-            <Services title="Labtest Category" data={LabtestCategoryStateData.filter(x => x.active)} />
-            <Doctors title="Meet Our Trusted Doctors" data={DoctorStateData.filter(x => x.active).slice(0, 6)} />
-        </>
-    )
+      {/* ══ Page sections ══ */}
+      <About />
+      <Services title="Doctor Specialization" data={SpecializationStateData.filter(x=>x.active)} />
+      <Features />
+      <Services title="Medicine Category"  data={MedicineCategoryStateData.filter(x=>x.active)} />
+      <Offers />
+      <PriceSection />
+      <Testimonials />
+      <Services title="Labtest Category" data={LabtestCategoryStateData.filter(x=>x.active)} />
+      <Doctors title="Meet Our Trusted Doctors" data={DoctorStateData.filter(x=>x.active).slice(0,6)} />
+    </>
+  )
 }

@@ -3,15 +3,16 @@ const LabtestCartRouter = require("express").Router()
 const { createRecord,
     getRecord,
     getSingleRecord,
-    updaterecord,
+    updateRecord,
     deleteRecord } = require("../controllers/LabtestCartController");
+const { verifyBoth } = require("../middleware/authorization");
 
 
 
-LabtestCartRouter.post("", createRecord);
-LabtestCartRouter.get("", getRecord),
-LabtestCartRouter.get("/:_id", getSingleRecord),
-LabtestCartRouter.put("/:_id", updaterecord),
-LabtestCartRouter.delete("/:_id", deleteRecord)
+LabtestCartRouter.post("",verifyBoth, createRecord);
+LabtestCartRouter.get("/:userid",verifyBoth, getRecord),
+LabtestCartRouter.get("/:_id",verifyBoth, getSingleRecord),
+LabtestCartRouter.put("/:_id",verifyBoth, updateRecord),
+LabtestCartRouter.delete("/:_id",verifyBoth, deleteRecord)
 
 module.exports = LabtestCartRouter

@@ -1,3 +1,4 @@
+// ─── MedicineDetailPage.jsx ───────────────────────────────────────────────────
 import React, { useEffect, useState } from "react";
 import HeroSection from "../Components/HeroSection";
 import { useNavigate, useParams } from "react-router-dom";
@@ -13,36 +14,104 @@ import {
 } from "../Redux/ActionCreators/MedicineWishlistActionCreators";
 import Services from "../Components/Services";
 
+const P = "#06A3DA",
+  S = "#F57E57",
+  DARK = "#091E3E",
+  GRAY = "#6b7a93";
+
+function DetailRow({ icon, label, value, children }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "flex-start",
+        gap: 12,
+        padding: "11px 0",
+        borderBottom: "1px solid rgba(6,163,218,0.07)",
+      }}
+    >
+      <div
+        style={{
+          width: 32,
+          height: 32,
+          flexShrink: 0,
+          background: "rgba(6,163,218,0.08)",
+          borderRadius: 8,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <i className={`fa ${icon}`} style={{ color: P, fontSize: 12 }} />
+      </div>
+      <div style={{ flex: 1 }}>
+        <p
+          style={{
+            margin: "0 0 1px",
+            fontSize: "0.72rem",
+            color: GRAY,
+            fontWeight: 500,
+          }}
+        >
+          {label}
+        </p>
+        {children || (
+          <p
+            style={{
+              margin: 0,
+              fontSize: "0.9rem",
+              fontWeight: 600,
+              color: value ? DARK : GRAY,
+            }}
+          >
+            {value || "N/A"}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// FIX 1: Helper to format ISO date strings into a readable format
+function formatDate(dateStr) {
+  if (!dateStr) return "N/A";
+  const d = new Date(dateStr);
+  if (isNaN(d)) return dateStr; // return as-is if not a valid date
+  return d.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
 export default function MedicineDetailPage() {
-  let { _id } = useParams();
-  let [data, setData] = useState({});
-  let [relatedMedicine, setRelatedMedicine] = useState([]);
-  let [qty, setQty] = useState(1);
-  // console.log(_id)
+  const { _id } = useParams();
+  const [data, setData] = useState({});
+  const [relatedMedicine, setRelatedMedicine] = useState([]);
+  const [qty, setQty] = useState(1);
 
-  // ✅ Safe fallback to [] in case Redux returns undefined
-  let MedicineStateData = useSelector((state) => state.MedicineStateData) || [];
-  let MedicineCartStateData =
-    useSelector((state) => state.MedicineCartStateData) || [];
-  let WishlistStateData = useSelector((state) => state.WishlistStateData) || [];
+  const MedicineStateData = useSelector((s) => s.MedicineStateData) || [];
+  const MedicineCartStateData =
+    useSelector((s) => s.MedicineCartStateData) || [];
+  const WishlistStateData = useSelector((s) => s.WishlistStateData) || [];
 
-  let dispatch = useDispatch();
-  let navigate = useNavigate();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  // ✅ Single useEffect for all dispatches on mount
   useEffect(() => {
     dispatch(getMedicine());
     dispatch(getMedicineCart());
     dispatch(getMedicineWishlist());
   }, [dispatch]);
 
-  // ✅ Separate useEffect to react when MedicineStateData or id changes
+  
+
   useEffect(() => {
     if (MedicineStateData.length > 0) {
-      let item = MedicineStateData.find((x) => x._id === _id);
+      const item = MedicineStateData.find((x) => x._id === _id);
       if (item) {
         setData(item);
-        // ✅ Compare by manufacturer._id (object, not string)
+        setQty(1); // FIX 2: Reset qty when the medicine changes
         setRelatedMedicine(
           MedicineStateData.filter(
             (x) =>
@@ -55,195 +124,428 @@ export default function MedicineDetailPage() {
     }
   }, [MedicineStateData, _id]);
 
-  function addToMedicineCart() {
-    if (localStorage.getItem("login")) {
-      let item = MedicineCartStateData.find(
-        (x) =>
-          (x.medicine?._id || x.medicine) === _id &&
-          (x.user?._id || x.user) === localStorage.getItem("userid"),
-      );
-      console.log({
-        user: localStorage.getItem("userid"),
-        medicine: _id,
-        qty: qty,
-        total: data.finalPrice * qty,
-      });
-      if (!item) {
-        dispatch(
-          createMedicineCart({
-            user: localStorage.getItem("userid"),
-            medicine: _id,
-            qty: qty,
-            total: data.finalPrice * qty,
-          }),
-        );
-      }
-      console.log(`id = `,)
-
-      navigate("/medicine/cart");
-    } else {
-      alert("Login To Add Item In MedicineCart And For Placing Order");
+  // FIX 3: Added login check and navigate-to-cart after adding
+  const addToMedicineCart = () => {
+    if (!localStorage.getItem("login")) {
+      alert("Login to add to cart");
       navigate("/login");
+      return;
     }
-  }
+
+    const item = MedicineCartStateData.find(
+      (x) =>
+        (x.medicine?._id || x.medicine) === _id &&
+        (x.user?._id || x.user) === localStorage.getItem("userid"),
+    );
+
+    if (!item) {
+      dispatch(
+        createMedicineCart({
+          user: localStorage.getItem("userid"),
+          medicine: data._id,
+          qty,
+          total: data.finalPrice * qty,
+        }),
+      );
+    }
+
+    navigate("/cart");
+  };
+
+  // console.log(dispatch(getMedicineCart))
 
   function addToWishlist() {
-    if (localStorage.getItem("login")) {
-      let item = WishlistStateData.find(
-        (x) =>
-          (x.medicine?._id || x.medicine) === _id &&
-          (x.user?._id || x.user) === localStorage.getItem("userid"),
-      );
-      if (!item) {
-        dispatch(
-          createMedicineWishlist({
-            user: localStorage.getItem("userid"),
-            medicine: _id,
-          }),
-        );
-      }
-      navigate("/medicine/wishlist");
-    } else {
-      alert("Login To Add Item In Wishlist And For Placing Order");
+    if (!localStorage.getItem("login")) {
+      alert("Login to add to wishlist");
       navigate("/login");
+      return;
     }
+    const item = WishlistStateData.find(
+      (x) =>
+        (x.medicine?._id || x.medicine) === _id &&
+        (x.user?._id || x.user) === localStorage.getItem("userid"),
+    );
+    if (!item)
+      dispatch(
+        createMedicineWishlist({
+          user: localStorage.getItem("userid"),
+          medicine: _id,
+        }),
+      );
+    navigate("/medicine/wishlist");
   }
+
+  const pic = data?.pic
+    ? `${process.env.REACT_APP_BACKEND_SERVER}/${Array.isArray(data.pic) ? data.pic[0] : data.pic}`
+    : null;
+
+  // FIX 4: Stock ceiling — qty cannot exceed available stock
+  const maxQty = typeof data.stock === "number" && data.stock > 0 ? data.stock : 99;
 
   return (
     <>
       <HeroSection title={`Medicine - ${data.name || ""}`} />
-      <div className="container-xxl py-5">
-        <div className="container-fluid text-center">
-          <div
-            className="section-header text-center mb-5"
-            style={{ maxWidth: 500, margin: "auto" }}
-          >
-            <h1 className="display-4 fw-bold">{data.name}</h1>
+      <div
+        style={{
+          background: "linear-gradient(135deg,#EEF9FF 0%,#fff 100%)",
+          padding: "56px 16px 80px",
+        }}
+      >
+        <div style={{ maxWidth: 1040, margin: "0 auto" }}>
+          {/* Heading */}
+          <div style={{ textAlign: "center", marginBottom: 40 }}>
+            <span
+              style={{
+                display: "inline-block",
+                background: "rgba(6,163,218,0.10)",
+                color: P,
+                fontSize: "0.75rem",
+                fontWeight: 800,
+                letterSpacing: "0.09em",
+                textTransform: "uppercase",
+                padding: "5px 18px",
+                borderRadius: 50,
+                marginBottom: 12,
+                border: `1px solid rgba(6,163,218,0.22)`,
+              }}
+            >
+              Medicine
+            </span>
+            <h2
+              style={{
+                fontFamily: "'Jost',sans-serif",
+                fontSize: "2rem",
+                fontWeight: 800,
+                color: DARK,
+                margin: 0,
+              }}
+            >
+              {data.name}
+            </h2>
           </div>
-          <div className="row">
-            {/* Medicine Image */}
-            <div className="col-md-5 d-flex align-items-center justify-content-center">
-              {data?.pic && (
-                <img
-                  // ✅ pic is an array, use first element
-                  src={`${process.env.REACT_APP_BACKEND_SERVER}/${Array.isArray(data.pic) ? data.pic[0] : data.pic}`}
-                  style={{ height: 400, width: "100%", borderRadius: "10px" }}
-                  className="shadow-lg"
-                  alt="Medicine"
-                />
-              )}
+
+          <div
+            style={{
+              display: "flex",
+              gap: 28,
+              flexWrap: "wrap",
+              alignItems: "flex-start",
+            }}
+          >
+            {/* Image */}
+            <div style={{ flex: "0 0 300px" }}>
+              <div
+                style={{
+                  background: "#fff",
+                  borderRadius: 20,
+                  overflow: "hidden",
+                  border: `1px solid rgba(6,163,218,0.12)`,
+                  boxShadow: "0 8px 32px rgba(9,30,62,0.10)",
+                  padding: "8px",
+                }}
+              >
+                {pic && (
+                  <img
+                    src={pic}
+                    alt={data.name}
+                    style={{
+                      width: "100%",
+                      height: 320,
+                      objectFit: "contain",
+                      borderRadius: 16,
+                    }}
+                  />
+                )}
+                {/* Price badge */}
+                <div
+                  style={{
+                    padding: "18px 16px",
+                    borderTop: `1px solid rgba(6,163,218,0.08)`,
+                    textAlign: "center",
+                  }}
+                >
+                  <p
+                    style={{
+                      margin: "0 0 4px",
+                      fontSize: "0.8rem",
+                      color: GRAY,
+                      fontWeight: 500,
+                    }}
+                  >
+                    Price
+                  </p>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 10,
+                    }}
+                  >
+                    <del style={{ color: "#ef4444", fontSize: "0.9rem" }}>
+                      ₹{data.basePrice}
+                    </del>
+                    <span
+                      style={{
+                        fontFamily: "'Jost',sans-serif",
+                        fontWeight: 800,
+                        fontSize: "1.4rem",
+                        color: P,
+                      }}
+                    >
+                      ₹{data.finalPrice}
+                    </span>
+                    <span
+                      style={{
+                        background: "rgba(6,163,218,0.10)",
+                        color: P,
+                        borderRadius: 50,
+                        fontSize: "0.72rem",
+                        fontWeight: 700,
+                        padding: "2px 8px",
+                      }}
+                    >
+                      {data.discount}% off
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            {/* Medicine Details */}
-            <div className="col-md-7">
-              <div className="card shadow-lg p-4">
-                <table className="table table-bordered table-striped border-3 border-primary">
-                  <tbody>
-                    <tr>
-                      <th>Medicine Name</th>
-                      <td>{data?.name || "N/A"}</td>
-                    </tr>
-                    <tr>
-                      <th>Category</th>
-                      {/* ✅ Use .name on object */}
-                      <td>{data?.manufacturer?.name || "N/A"}</td>
-                    </tr>
-                    <tr>
-                      <th>Manufacturer</th>
-                      {/* ✅ Use .name on object */}
-                      <td>{data?.manufacturer?.name || "N/A"}</td>
-                    </tr>
-                    <tr>
-                      <th>Price</th>
-                      <td>
-                        <del className="text-danger">
-                          &#8377;{data?.basePrice}
-                        </del>
-                        <strong className="ms-2 text-success">
-                          &#8377;{data?.finalPrice}
-                        </strong>
-                        <sup className="text-success"> {data?.discount}%</sup>
-                      </td>
-                    </tr>
-                    <tr>
-                      <th>Expire Date</th>
-                      <td>{data.expireDate}</td>
-                    </tr>
-                    <tr>
-                      <th>In Stock</th>
-                      <td>{data.stock ? "Yes" : "No"}</td>
-                    </tr>
-                    <tr>
-                      <td colSpan={2}>
-                        <div className="row">
-                          <div className="col-md-4 mb-3">
-                            <div className="btn-group w-100">
-                              <button
-                                className="btn btn-primary"
-                                style={{ borderRadius: "5px" }}
-                                onClick={() =>
-                                  setQty((prev) => Math.max(1, prev - 1))
-                                }
-                              >
-                                <i className="fa fa-minus"></i>
-                              </button>
-                              <h3 className="w-50 text-center">{qty}</h3>
-                              <button
-                                className="btn btn-primary"
-                                style={{ borderRadius: "5px" }}
-                                onClick={() => setQty((prev) => prev + 1)}
-                              >
-                                <i className="fa fa-plus"></i>
-                              </button>
-                            </div>
-                          </div>
-                          <div className="col-md-8 mb-3">
-                            <div className="btn-group w-100">
-                              <button
-                                className="btn btn-primary"
-                                onClick={addToMedicineCart}
-                                style={{ borderRadius: "5px" }}
-                              >
-                                <i className="fa fa-shopping-cart me-2"></i>Add
-                                To Cart
-                              </button>
-                              <button
-                                className="btn btn-secondary"
-                                onClick={addToWishlist}
-                                style={{ borderRadius: "5px" }}
-                              >
-                                <i className="fa fa-heart me-2"></i>Add To
-                                Wishlist
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <th>Description</th>
-                      <td>
-                        <div
-                          dangerouslySetInnerHTML={{
-                            __html:
-                              data?.description || "No description available",
-                          }}
-                        />
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+            {/* Details */}
+            <div style={{ flex: 1, minWidth: 280 }}>
+              <div
+                style={{
+                  background: "#fff",
+                  borderRadius: 20,
+                  border: `1px solid rgba(6,163,218,0.12)`,
+                  padding: "28px",
+                  boxShadow: "0 8px 32px rgba(9,30,62,0.10)",
+                  marginBottom: 20,
+                }}
+              >
+                <h6
+                  style={{
+                    fontFamily: "'Jost',sans-serif",
+                    fontWeight: 700,
+                    color: DARK,
+                    marginBottom: 18,
+                    fontSize: "1rem",
+                  }}
+                >
+                  Medicine Details
+                </h6>
+                <DetailRow
+                  icon="fa-pills"
+                  label="Medicine Name"
+                  value={data.name}
+                />
+                <DetailRow
+                  icon="fa-industry"
+                  label="Manufacturer"
+                  value={data.manufacturer?.name}
+                />
+                {/* FIX 1 applied: formatted date */}
+                <DetailRow
+                  icon="fa-calendar-times"
+                  label="Expire Date"
+                  value={formatDate(data.expireDate)}
+                />
+                <DetailRow
+                  icon="fa-boxes"
+                  label="In Stock"
+                  value={data.stock ? "Available" : "Out of Stock"}
+                />
+                {data.description && (
+                  <DetailRow icon="fa-info-circle" label="Description">
+                    <div
+                      style={{ fontSize: "0.88rem", color: DARK }}
+                      dangerouslySetInnerHTML={{ __html: data.description }}
+                    />
+                  </DetailRow>
+                )}
+              </div>
+
+              {/* Add to cart */}
+              <div
+                style={{
+                  background: "#fff",
+                  borderRadius: 20,
+                  border: `1px solid rgba(6,163,218,0.12)`,
+                  padding: "24px 28px",
+                  boxShadow: "0 8px 32px rgba(9,30,62,0.10)",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    flexWrap: "wrap",
+                    gap: 16,
+                  }}
+                >
+                  {/* Qty */}
+                  <div>
+                    <p
+                      style={{
+                        margin: "0 0 10px",
+                        fontSize: "0.82rem",
+                        fontWeight: 600,
+                        color: DARK,
+                      }}
+                    >
+                      Quantity
+                    </p>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 12,
+                        background: "rgba(6,163,218,0.06)",
+                        borderRadius: 50,
+                        padding: "6px 16px",
+                        border: `1px solid rgba(6,163,218,0.18)`,
+                      }}
+                    >
+                      <button
+                        onClick={() => setQty((p) => Math.max(1, p - 1))}
+                        style={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: "50%",
+                          border: "none",
+                          background: "rgba(6,163,218,0.12)",
+                          color: P,
+                          fontWeight: 700,
+                          fontSize: 18,
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        −
+                      </button>
+                      <span
+                        style={{
+                          fontFamily: "'Jost',sans-serif",
+                          fontWeight: 800,
+                          fontSize: "1.1rem",
+                          color: DARK,
+                          minWidth: 24,
+                          textAlign: "center",
+                        }}
+                      >
+                        {qty}
+                      </span>
+                      {/* FIX 4 applied: cap qty at maxQty */}
+                      <button
+                        onClick={() => setQty((p) => Math.min(maxQty, p + 1))}
+                        style={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: "50%",
+                          border: "none",
+                          background: P,
+                          color: "#fff",
+                          fontWeight: 700,
+                          fontSize: 18,
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                  <p
+                    style={{
+                      fontFamily: "'Jost',sans-serif",
+                      fontWeight: 800,
+                      fontSize: "1.2rem",
+                      color: P,
+                      margin: 0,
+                    }}
+                  >
+                    Total: ₹{(data.finalPrice || 0) * qty}
+                  </p>
+                </div>
+                <div style={{ display: "flex", gap: 12, marginTop: 20 }}>
+                  <button
+                    onClick={addToMedicineCart}
+                    style={{
+                      flex: 1,
+                      padding: "12px",
+                      border: "none",
+                      borderRadius: 50,
+                      background: `linear-gradient(135deg,${P},#0080b0)`,
+                      color: "#fff",
+                      fontWeight: 700,
+                      fontSize: "0.88rem",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 7,
+                      boxShadow: `0 6px 16px rgba(6,163,218,0.3)`,
+                      transition: "all .25s",
+                    }}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.background = `linear-gradient(135deg,${S},#d05c35)`)
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.background = `linear-gradient(135deg,${P},#0080b0)`)
+                    }
+                  >
+                    <i className="fa fa-shopping-cart" />
+                    Add to Cart
+                  </button>
+                  <button
+                    onClick={addToWishlist}
+                    style={{
+                      flex: 1,
+                      padding: "12px",
+                      border: `1.5px solid rgba(6,163,218,0.3)`,
+                      borderRadius: 50,
+                      background: "rgba(6,163,218,0.06)",
+                      color: P,
+                      fontWeight: 700,
+                      fontSize: "0.88rem",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 7,
+                      transition: "all .25s",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = P;
+                      e.currentTarget.style.color = "#fff";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = "rgba(6,163,218,0.06)";
+                      e.currentTarget.style.color = P;
+                    }}
+                  >
+                    <i className="fa fa-heart" />
+                    Wishlist
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Related Medicines */}
       {relatedMedicine.length > 0 ? (
         <Services title="Other Related Medicines" data={relatedMedicine} />
       ) : (
-        <p className="text-center text-muted">No related Medicines found</p>
+        <p style={{ textAlign: "center", color: GRAY, padding: "32px 0" }}>
+          No related medicines found
+        </p>
       )}
     </>
   );

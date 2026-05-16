@@ -13,76 +13,52 @@ export default function LabtestPage() {
     const LabtestStateData = useSelector(state => state.LabtestStateData);
     const dispatch = useDispatch();
 
-    useEffect(() => {
-        dispatch(getLabtestCategory());
-    }, []);
-
-    useEffect(() => {
-        dispatch(getLabtest());
-    }, [LabtestStateData.length]);
-    console.log("Labtest", LabtestStateData)
+    useEffect(() => { dispatch(getLabtestCategory()); }, []);
+    useEffect(() => { dispatch(getLabtest()); }, [LabtestStateData.length]);
 
     return (
         <>
             <SecondaryNavbar title="labtest" />
-
-            {/* Hero Section */}
             <HeroSection title="Labtests" />
 
-            {/* Labtest Store Section */}
-            <div className="container-fluid py-5 wow fadeInUp bg-light" data-wow-delay="0.1s">
+            {/* Categories Section */}
+            <div className="labtest-category-section py-5">
                 <div className="container">
-                    <div className="section-title mb-5 text-center">
-                        <h5 className="position-relative d-inline-block text-primary text-uppercase">Our Labtest Store</h5>
-                        <h1 className="display-6 fw-bold mb-4">Explore Labtests by Category</h1>
-                        <p className="text-muted mx-auto" style={{ maxWidth: '600px' }}>
-                            Find the best Labtest categories for your health needs. We provide a wide range of quality-tested Labtests.
+                    <div className="section-header text-center mb-5">
+                        <span className="section-badge badge-blue">Our Labtest Store</span>
+                        <h1 className="section-title">Explore Labtests by Category</h1>
+                        <p className="section-subtitle">
+                            Find the best lab test categories for your health needs across a wide range of quality-tested options.
                         </p>
                     </div>
                     <div className="row g-4">
-                        {
-                            LabtestCategoryStateData?.map((item, index) => (
-                                <div className="col-12 col-sm-6 col-lg-4" key={index}>
-                                    <Link to={`/labtest/shop?lc=${item.name}`}>
-                                        <div
-                                            className="service-item shadow rounded bg-white overflow-hidden h-100"
-                                            style={{ cursor: 'pointer', transition: 'transform 0.3s ease, box-shadow 0.3s ease' }}
-                                            onMouseEnter={e => {
-                                                e.currentTarget.style.transform = 'translateY(-5px)';
-                                                e.currentTarget.style.boxShadow = '0 10px 25px rgba(0,0,0,0.1)';
-                                            }}
-                                            onMouseLeave={e => {
-                                                e.currentTarget.style.transform = 'translateY(0)';
-                                                e.currentTarget.style.boxShadow = '0 5px 15px rgba(0,0,0,0.05)';
-                                            }}
-                                        >
-                                            <div className="overflow-hidden">
-                                                <img
-                                                    className="img-fluid w-100"
-                                                    src={`${process.env.REACT_APP_BACKEND_SERVER}/${item.pic}`}
-                                                    alt={item.name}
-                                                    style={{
-                                                        height: "220px",
-                                                        objectFit: "cover",
-                                                        transition: 'transform 0.5s ease'
-                                                    }}
-                                                    onMouseOver={e => e.currentTarget.style.transform = "scale(1.05)"}
-                                                    onMouseOut={e => e.currentTarget.style.transform = "scale(1)"}
-                                                />
-                                            </div>
-                                            <div className="text-center p-4">
-                                                <h5 className="text-primary fw-bold m-0">{item.name}</h5>
+                        {LabtestCategoryStateData?.map((item, index) => (
+                            <div className="col-12 col-sm-6 col-lg-4" key={index}>
+                                <Link to={`/labtest/shop?lc=${item.name}`} className="text-decoration-none">
+                                    <div className="labtest-category-card">
+                                        <div className="labtest-cat-img-wrap">
+                                            <img
+                                                src={`${process.env.REACT_APP_BACKEND_SERVER}/${item.pic}`}
+                                                alt={item.name}
+                                                className="labtest-cat-img"
+                                            />
+                                            <div className="labtest-cat-overlay">
+                                                <i className="bi bi-arrow-right-circle-fill overlay-icon"></i>
                                             </div>
                                         </div>
-                                    </Link>
-                                </div>
-                            ))
-                        }
+                                        <div className="labtest-cat-footer">
+                                            <h5 className="labtest-cat-name">{item.name}</h5>
+                                            <span className="labtest-cat-explore">Explore <i className="bi bi-chevron-right"></i></span>
+                                        </div>
+                                    </div>
+                                </Link>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
+
             <Labtest title="Available Lab Tests" data={LabtestStateData.filter(x => x.active).slice(0, 6)} />
-            {/* <Testimonials /> */}
         </>
     );
 }
